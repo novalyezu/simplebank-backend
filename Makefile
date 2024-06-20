@@ -28,4 +28,7 @@ migrateup:
 migratedown:
 	migrate -path db/migration -database "postgresql://${PG_USER}:${PG_PASS}@${PG_HOST}:${PG_PORT}/${PG_DATABASE}?sslmode=disable" -verbose down
 
-.PHONY: postgrecreate postgrestart postgrestop createdb dropdb migrateup migratedown
+sqlc:
+	sqlc generate
+
+.PHONY: postgrecreate postgrestart postgrestop createdb dropdb migrateup migratedown sqlc
