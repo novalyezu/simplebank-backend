@@ -26,3 +26,8 @@ RETURNING *;
 -- name: DeleteAccount :exec
 DELETE FROM accounts
 WHERE id = $1;
+
+-- name: DeleteAccountByOwnerLike :exec
+-- for testing purpose
+DELETE FROM accounts
+WHERE owner LIKE '%' || @owner::text || '%';

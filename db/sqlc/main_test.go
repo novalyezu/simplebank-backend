@@ -38,6 +38,7 @@ func TestMain(m *testing.M) {
 	}
 
 	testQueries = New(conn)
+	code := m.Run()
 
-	os.Exit(m.Run())
+	os.Exit(code)
 }
