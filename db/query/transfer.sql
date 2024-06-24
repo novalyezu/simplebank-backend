@@ -19,7 +19,7 @@ ORDER BY id
 LIMIT $3
 OFFSET $4;
 
--- name: DeleteTransfer :exec
+-- name: deleteTransfer :exec
 -- for testing purpose
 DELETE FROM transfers
 WHERE from_account_id = $1 AND to_account_id = $2;

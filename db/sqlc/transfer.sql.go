@@ -37,22 +37,6 @@ func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) 
 	return i, err
 }
 
-const deleteTransfer = `-- name: DeleteTransfer :exec
-DELETE FROM transfers
-WHERE from_account_id = $1 AND to_account_id = $2
-`
-
-type DeleteTransferParams struct {
-	FromAccountID int64 `json:"from_account_id"`
-	ToAccountID   int64 `json:"to_account_id"`
-}
-
-// for testing purpose
-func (q *Queries) DeleteTransfer(ctx context.Context, arg DeleteTransferParams) error {
-	_, err := q.db.ExecContext(ctx, deleteTransfer, arg.FromAccountID, arg.ToAccountID)
-	return err
-}
-
 const getTransfer = `-- name: GetTransfer :one
 SELECT id, from_account_id, to_account_id, amount, created_at FROM transfers
 WHERE id = $1 LIMIT 1
@@ -120,4 +104,20 @@ func (q *Queries) ListTransfers(ctx context.Context, arg ListTransfersParams) ([
 		return nil, err
 	}
 	return items, nil
+}
+
+const deleteTransfer = `-- name: deleteTransfer :exec
+DELETE FROM transfers
+WHERE from_account_id = $1 AND to_account_id = $2
+`
+
+type deleteTransferParams struct {
+	FromAccountID int64 `json:"from_account_id"`
+	ToAccountID   int64 `json:"to_account_id"`
+}
+
+// for testing purpose
+func (q *Queries) deleteTransfer(ctx context.Context, arg deleteTransferParams) error {
+	_, err := q.db.ExecContext(ctx, deleteTransfer, arg.FromAccountID, arg.ToAccountID)
+	return err
 }
