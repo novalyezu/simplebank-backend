@@ -9,10 +9,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func createRandomAccount(t *testing.T) Account {
+const accPrefix = "acc_test_"
+
+func createRandomAccount(t *testing.T, prefix string) Account {
 	ctx := context.Background()
 	arg := CreateAccountParams{
-		Owner:    "gotest_" + util.RandomString(6),
+		Owner:    prefix + util.RandomString(6),
 		Balance:  util.RandomInt(0, 1000),
 		Currency: util.RandomCurrency(),
 	}
@@ -31,20 +33,20 @@ func createRandomAccount(t *testing.T) Account {
 	return account
 }
 
-func deleteTestingAccount(ctx context.Context) {
-	testQueries.DeleteAccountByOwnerLike(ctx, "gotest_")
+func deleteTestingAccount(ctx context.Context, prefix string) {
+	testQueries.DeleteAccountByOwnerLike(ctx, prefix)
 }
 
 func TestCreateAccount(t *testing.T) {
 	ctx := context.Background()
-	createRandomAccount(t)
-	defer deleteTestingAccount(ctx)
+	createRandomAccount(t, accPrefix)
+	defer deleteTestingAccount(ctx, accPrefix)
 }
 
 func TestGetAccount(t *testing.T) {
 	ctx := context.Background()
-	newAccount := createRandomAccount(t)
-	defer deleteTestingAccount(ctx)
+	newAccount := createRandomAccount(t, accPrefix)
+	defer deleteTestingAccount(ctx, accPrefix)
 
 	account, err := testQueries.GetAccount(ctx, newAccount.ID)
 	assert.NoError(t, err)
@@ -58,8 +60,8 @@ func TestGetAccount(t *testing.T) {
 
 func TestUpdateAccount(t *testing.T) {
 	ctx := context.Background()
-	newAccount := createRandomAccount(t)
-	defer deleteTestingAccount(ctx)
+	newAccount := createRandomAccount(t, accPrefix)
+	defer deleteTestingAccount(ctx, accPrefix)
 
 	arg := UpdateAccountParams{
 		ID:      newAccount.ID,
@@ -78,8 +80,8 @@ func TestUpdateAccount(t *testing.T) {
 
 func TestDeleteAccount(t *testing.T) {
 	ctx := context.Background()
-	newAccount := createRandomAccount(t)
-	defer deleteTestingAccount(ctx)
+	newAccount := createRandomAccount(t, accPrefix)
+	defer deleteTestingAccount(ctx, accPrefix)
 
 	err := testQueries.DeleteAccount(ctx, newAccount.ID)
 	assert.NoError(t, err)
@@ -93,9 +95,9 @@ func TestDeleteAccount(t *testing.T) {
 func TestListAccounts(t *testing.T) {
 	ctx := context.Background()
 	for i := 0; i < 10; i++ {
-		createRandomAccount(t)
+		createRandomAccount(t, accPrefix)
 	}
-	defer deleteTestingAccount(ctx)
+	defer deleteTestingAccount(ctx, accPrefix)
 
 	arg := ListAccountsParams{
 		Limit:   5,

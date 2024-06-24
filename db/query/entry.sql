@@ -16,3 +16,8 @@ WHERE account_id = $1
 ORDER BY id
 LIMIT $2
 OFFSET $3;
+
+-- name: DeleteEntryByAccountID :exec
+-- for testing purpose
+DELETE FROM entries
+WHERE account_id = $1;
