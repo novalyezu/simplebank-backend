@@ -10,6 +10,7 @@ import (
 const storeTestPrefix = "store_test_"
 
 func TestTransferTx(t *testing.T) {
+	ctx := context.Background()
 	store := NewStore(testDB)
 	account1 := createRandomAccount(t, storeTestPrefix)
 	account2 := createRandomAccount(t, storeTestPrefix)
@@ -41,6 +42,7 @@ func TestTransferTx(t *testing.T) {
 		result := <-results
 		assert.NotEmpty(t, result)
 
+		// check transfer
 		transfer := result.Transfer
 		assert.NotEmpty(t, transfer)
 		assert.Equal(t, account1.ID, transfer.FromAccountID)
@@ -52,6 +54,7 @@ func TestTransferTx(t *testing.T) {
 		_, err = store.GetTransfer(ctx, transfer.ID)
 		assert.NoError(t, err)
 
+		// check from account entry
 		fromEntry := result.FromEntry
 		assert.NotEmpty(t, fromEntry)
 		assert.Equal(t, account1.ID, fromEntry.AccountID)
@@ -62,6 +65,7 @@ func TestTransferTx(t *testing.T) {
 		_, err = store.GetEntry(ctx, fromEntry.ID)
 		assert.NoError(t, err)
 
+		// check to account entry
 		toEntry := result.ToEntry
 		assert.NotEmpty(t, toEntry)
 		assert.Equal(t, account2.ID, toEntry.AccountID)
@@ -71,5 +75,30 @@ func TestTransferTx(t *testing.T) {
 
 		_, err = store.GetEntry(ctx, toEntry.ID)
 		assert.NoError(t, err)
+
+		// check from account balance
+		fromAccount := result.FromAccount
+		expectedFromAccountBalance := account1.Balance - (int64(i+1) * amount)
+		assert.NotEmpty(t, fromAccount)
+		assert.Equal(t, account1.ID, fromAccount.ID)
+		assert.Equal(t, expectedFromAccountBalance, fromAccount.Balance)
+
+		// check to account balance
+		toAccount := result.ToAccount
+		expectedToAccountBalance := account2.Balance + (int64(i+1) * amount)
+		assert.NotEmpty(t, toAccount)
+		assert.Equal(t, account2.ID, toAccount.ID)
+		assert.Equal(t, expectedToAccountBalance, toAccount.Balance)
 	}
+
+	// check for final update
+	updatedAccount1, err := store.GetAccount(ctx, account1.ID)
+	expectedAccount1Balance := account1.Balance - (int64(n) * amount)
+	assert.NoError(t, err)
+	assert.Equal(t, expectedAccount1Balance, updatedAccount1.Balance)
+
+	updatedAccount2, err := store.GetAccount(ctx, account2.ID)
+	expectedAccount2Balance := account2.Balance + (int64(n) * amount)
+	assert.NoError(t, err)
+	assert.Equal(t, expectedAccount2Balance, updatedAccount2.Balance)
 }
