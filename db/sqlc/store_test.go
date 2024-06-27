@@ -102,3 +102,50 @@ func TestTransferTx(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expectedAccount2Balance, updatedAccount2.Balance)
 }
+
+func TestTransferTxDeadlock(t *testing.T) {
+	ctx := context.Background()
+	store := NewStore(testDB)
+	account1 := createRandomAccount(t, storeTestPrefix)
+	account2 := createRandomAccount(t, storeTestPrefix)
+
+	n := 10
+	amount := int64(10)
+
+	errs := make(chan error)
+
+	for i := 0; i < n; i++ {
+		fromAccountID := account1.ID
+		toAccountID := account2.ID
+
+		// if odd number, reverse the transfers
+		if i%2 == 1 {
+			fromAccountID = account2.ID
+			toAccountID = account1.ID
+		}
+
+		go func() {
+			ctx := context.Background()
+			_, err := store.TransferTx(ctx, TransferTxParams{
+				FromAccountID: fromAccountID,
+				ToAccountID:   toAccountID,
+				Amount:        amount,
+			})
+			errs <- err
+		}()
+	}
+
+	for i := 0; i < n; i++ {
+		err := <-errs
+		assert.NoError(t, err)
+	}
+
+	// check for final update
+	updatedAccount1, err := store.GetAccount(ctx, account1.ID)
+	assert.NoError(t, err)
+	assert.Equal(t, account1.Balance, updatedAccount1.Balance)
+
+	updatedAccount2, err := store.GetAccount(ctx, account2.ID)
+	assert.NoError(t, err)
+	assert.Equal(t, account2.Balance, updatedAccount2.Balance)
+}
