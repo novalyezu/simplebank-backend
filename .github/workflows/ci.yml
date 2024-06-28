@@ -41,6 +41,15 @@ jobs:
           go-version: '1.21.x'
       - name: Check out code
         uses: actions/checkout@v4
+      - name: Create env file
+        run: |
+          touch .env
+          echo POSTGRES_HOST=${{env.POSTGRES_HOST}} >> .env
+          echo POSTGRES_PORT=${{env.POSTGRES_PORT}} >> .env
+          echo POSTGRES_USER=${{env.POSTGRES_USER}} >> .env
+          echo POSTGRES_PASSWORD=${{env.POSTGRES_PASSWORD}} >> .env
+          echo POSTGRES_DATABASE=${{env.POSTGRES_DATABASE}} >> .env
+          cat .env
       - name: Install golang migrations
         run: |
           curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.1/migrate.linux-amd64.tar.gz | tar xvz
