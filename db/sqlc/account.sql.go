@@ -109,6 +109,46 @@ func (q *Queries) GetAccountForUpdate(ctx context.Context, id int64) (Account, e
 	return i, err
 }
 
+const listAccounts = `-- name: ListAccounts :many
+SELECT id, owner, balance, currency, created_at FROM accounts
+LIMIT $1
+OFFSET $2
+`
+
+type ListAccountsParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]Account, error) {
+	rows, err := q.db.QueryContext(ctx, listAccounts, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Account{}
+	for rows.Next() {
+		var i Account
+		if err := rows.Scan(
+			&i.ID,
+			&i.Owner,
+			&i.Balance,
+			&i.Currency,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateAccount = `-- name: UpdateAccount :one
 UPDATE accounts
   set balance = $2
@@ -143,53 +183,4 @@ WHERE owner LIKE '%' || $1::text || '%'
 func (q *Queries) deleteAccountByOwnerLike(ctx context.Context, owner string) error {
 	_, err := q.db.ExecContext(ctx, deleteAccountByOwnerLike, owner)
 	return err
-}
-
-const listAccounts = `-- name: listAccounts :many
-SELECT id, owner, balance, currency, created_at FROM accounts
-WHERE $3
-ORDER BY $4
-LIMIT $1
-OFFSET $2
-`
-
-type listAccountsParams struct {
-	Limit     int32       `json:"limit"`
-	Offset    int32       `json:"offset"`
-	Condition interface{} `json:"condition"`
-	OrderBy   interface{} `json:"order_by"`
-}
-
-func (q *Queries) listAccounts(ctx context.Context, arg listAccountsParams) ([]Account, error) {
-	rows, err := q.db.QueryContext(ctx, listAccounts,
-		arg.Limit,
-		arg.Offset,
-		arg.Condition,
-		arg.OrderBy,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Account
-	for rows.Next() {
-		var i Account
-		if err := rows.Scan(
-			&i.ID,
-			&i.Owner,
-			&i.Balance,
-			&i.Currency,
-			&i.CreatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }

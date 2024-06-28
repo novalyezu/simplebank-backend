@@ -15,10 +15,8 @@ SELECT * FROM accounts
 WHERE id = $1 LIMIT 1
 FOR NO KEY UPDATE;
 
--- name: listAccounts :many
+-- name: ListAccounts :many
 SELECT * FROM accounts
-WHERE @condition
-ORDER BY @order_by
 LIMIT $1
 OFFSET $2;
 

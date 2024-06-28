@@ -100,9 +100,8 @@ func TestListAccounts(t *testing.T) {
 	defer deleteTestingAccount(ctx, accPrefix)
 
 	arg := ListAccountsParams{
-		Limit:   5,
-		Offset:  5,
-		OrderBy: "created_at__desc",
+		Limit:  5,
+		Offset: 5,
 	}
 	accounts, err := testQueries.ListAccounts(ctx, arg)
 	assert.NoError(t, err)
