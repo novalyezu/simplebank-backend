@@ -33,6 +33,11 @@ func TestTransferTx(t *testing.T) {
 			results <- result
 		}()
 	}
+	defer deleteTestingAccount(ctx, storeTestPrefix)
+	defer store.DeleteTransferTx(ctx, DeleteTransferTxParams{
+		FromAccountID: account1.ID,
+		ToAccountID:   account2.ID,
+	})
 
 	for i := 0; i < n; i++ {
 		ctx := context.Background()
@@ -134,6 +139,15 @@ func TestTransferTxDeadlock(t *testing.T) {
 			errs <- err
 		}()
 	}
+	defer deleteTestingAccount(ctx, storeTestPrefix)
+	defer store.DeleteTransferTx(ctx, DeleteTransferTxParams{
+		FromAccountID: account1.ID,
+		ToAccountID:   account2.ID,
+	})
+	defer store.DeleteTransferTx(ctx, DeleteTransferTxParams{
+		FromAccountID: account2.ID,
+		ToAccountID:   account1.ID,
+	})
 
 	for i := 0; i < n; i++ {
 		err := <-errs

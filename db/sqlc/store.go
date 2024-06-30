@@ -139,3 +139,33 @@ func moveBalance(
 	})
 	return
 }
+
+type DeleteTransferTxParams struct {
+	FromAccountID int64 `json:"from_account_id"`
+	ToAccountID   int64 `json:"to_account_id"`
+}
+
+// for testing purpose
+func (store *Store) DeleteTransferTx(ctx context.Context, arg DeleteTransferTxParams) error {
+	err := store.execTx(ctx, func(q *Queries) error {
+		var err error
+
+		err = q.deleteTransfer(ctx, deleteTransferParams(arg))
+		if err != nil {
+			return err
+		}
+
+		err = q.deleteEntryByAccountID(ctx, arg.FromAccountID)
+		if err != nil {
+			return err
+		}
+
+		err = q.deleteEntryByAccountID(ctx, arg.ToAccountID)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
+	return err
+}
