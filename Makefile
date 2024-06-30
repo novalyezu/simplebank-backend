@@ -37,4 +37,7 @@ test:
 server:
 	go run main.go
 
-.PHONY: postgrecreate postgrestart postgrestop createdb dropdb migrateup migratedown sqlc test server
+mockstore:
+	mockgen -package mockdb -destination db/mock/store.go github.com/novalyezu/simplebank-backend/db/sqlc Store
+
+.PHONY: postgrecreate postgrestart postgrestop createdb dropdb migrateup migratedown sqlc test server mockstore

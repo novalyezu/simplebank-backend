@@ -32,7 +32,7 @@ func createRandomTransfer(t *testing.T, fromAccount Account, toAccount Account) 
 }
 
 func deleteTestingTransfer(ctx context.Context, fromAccountID int64, toAccountID int64) {
-	testQueries.deleteTransfer(ctx, deleteTransferParams{
+	testQueries.DeleteTransfer(ctx, DeleteTransferParams{
 		FromAccountID: fromAccountID,
 		ToAccountID:   toAccountID,
 	})

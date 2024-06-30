@@ -34,7 +34,7 @@ func createRandomAccount(t *testing.T, prefix string) Account {
 }
 
 func deleteTestingAccount(ctx context.Context, prefix string) {
-	testQueries.deleteAccountByOwnerLike(ctx, prefix)
+	testQueries.DeleteAccountByOwnerLike(ctx, prefix)
 }
 
 func TestCreateAccount(t *testing.T) {

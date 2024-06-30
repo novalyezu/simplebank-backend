@@ -32,7 +32,7 @@ func createRandomEntry(t *testing.T, account Account) Entry {
 }
 
 func deleteTestingEntry(ctx context.Context, accountID int64) {
-	testQueries.deleteEntryByAccountID(ctx, accountID)
+	testQueries.DeleteEntryByAccountID(ctx, accountID)
 }
 
 func TestCreateEntry(t *testing.T) {

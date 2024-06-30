@@ -17,7 +17,7 @@ ORDER BY id
 LIMIT $2
 OFFSET $3;
 
--- name: deleteEntryByAccountID :exec
+-- name: DeleteEntryByAccountID :exec
 -- for testing purpose
 DELETE FROM entries
 WHERE account_id = $1;
