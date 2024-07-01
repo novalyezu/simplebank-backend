@@ -219,3 +219,88 @@ func TestListAccount(t *testing.T) {
 		})
 	}
 }
+
+func TestCreateAccount(t *testing.T) {
+	account := randomAccount()
+
+	testCases := []struct {
+		name          string
+		body          createAccountRequest
+		buildStubs    func(store *mockdb.MockStore)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name: "OK",
+			body: createAccountRequest{Owner: account.Owner, Currency: account.Currency},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.
+					EXPECT().
+					CreateAccount(gomock.Any(), db.CreateAccountParams{
+						Owner:    account.Owner,
+						Currency: account.Currency,
+						Balance:  0,
+					}).
+					Times(1).
+					Return(account, nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusOK, recorder.Code)
+				requiredMatchBody(t, recorder.Body, account)
+			},
+		},
+		{
+			name: "BadRequest",
+			body: createAccountRequest{Owner: "", Currency: ""},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.
+					EXPECT().
+					CreateAccount(gomock.Any(), gomock.Any()).
+					Times(0).
+					Return(db.Account{}, nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "InternalServerError",
+			body: createAccountRequest{Owner: account.Owner, Currency: account.Currency},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.
+					EXPECT().
+					CreateAccount(gomock.Any(), db.CreateAccountParams{
+						Owner:    account.Owner,
+						Currency: account.Currency,
+						Balance:  0,
+					}).
+					Times(1).
+					Return(db.Account{}, sql.ErrConnDone)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			store := mockdb.NewMockStore(ctrl)
+
+			tc.buildStubs(store)
+
+			server := NewServer(store)
+			recorder := httptest.NewRecorder()
+			url := "/accounts"
+			data, err := json.Marshal(tc.body)
+			assert.NoError(t, err)
+
+			request, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(data))
+			assert.NoError(t, err)
+
+			server.router.ServeHTTP(recorder, request)
+
+			tc.checkResponse(t, recorder)
+		})
+	}
+}
