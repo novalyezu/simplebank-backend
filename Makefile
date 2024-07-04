@@ -25,8 +25,14 @@ dropdb:
 migrateup:
 	migrate -path db/migration -database "postgresql://${PG_USER}:${PG_PASS}@${PG_HOST}:${PG_PORT}/${PG_DATABASE}?sslmode=disable" -verbose up
 
+migrateup-last:
+	migrate -path db/migration -database "postgresql://${PG_USER}:${PG_PASS}@${PG_HOST}:${PG_PORT}/${PG_DATABASE}?sslmode=disable" -verbose up 1
+
 migratedown:
 	migrate -path db/migration -database "postgresql://${PG_USER}:${PG_PASS}@${PG_HOST}:${PG_PORT}/${PG_DATABASE}?sslmode=disable" -verbose down
+
+migratedown-last:
+	migrate -path db/migration -database "postgresql://${PG_USER}:${PG_PASS}@${PG_HOST}:${PG_PORT}/${PG_DATABASE}?sslmode=disable" -verbose down 1
 
 sqlc:
 	sqlc generate
@@ -40,4 +46,4 @@ server:
 mockstore:
 	mockgen -package mockdb -destination db/mock/store.go github.com/novalyezu/simplebank-backend/db/sqlc Store
 
-.PHONY: postgrecreate postgrestart postgrestop createdb dropdb migrateup migratedown sqlc test server mockstore
+.PHONY: postgrecreate postgrestart postgrestop createdb dropdb migrateup migrateup-last migratedown migratedown-last sqlc test server mockstore
