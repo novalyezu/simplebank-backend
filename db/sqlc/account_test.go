@@ -13,8 +13,10 @@ const accPrefix = "acc_test_"
 
 func createRandomAccount(t *testing.T, prefix string) Account {
 	ctx := context.Background()
+	user := createRandomUser(t, accPrefix)
+
 	arg := CreateAccountParams{
-		Owner:    prefix + util.RandomString(6),
+		Owner:    user.Username,
 		Balance:  util.RandomInt(0, 1000),
 		Currency: util.RandomCurrency(),
 	}

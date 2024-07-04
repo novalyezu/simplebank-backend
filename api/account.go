@@ -2,9 +2,11 @@ package api
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
 	db "github.com/novalyezu/simplebank-backend/db/sqlc"
 )
 
@@ -28,6 +30,16 @@ func (server *Server) createAccount(c *gin.Context) {
 
 	account, err := server.store.CreateAccount(c, arg)
 	if err != nil {
+		if pgError, ok := err.(*pq.Error); ok {
+			switch pgError.Constraint {
+			case "accounts_owner_fkey":
+				c.JSON(http.StatusForbidden, errorResponse(fmt.Errorf("cannot create account with owner %s doesn't exists", body.Owner)))
+				return
+			case "owner_currency_key":
+				c.JSON(http.StatusForbidden, errorResponse(fmt.Errorf("cannot create account with same currency")))
+				return
+			}
+		}
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
