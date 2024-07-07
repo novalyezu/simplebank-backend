@@ -12,9 +12,12 @@ const userPrefix = "user_test_"
 
 func createRandomUser(t *testing.T, prefix string) User {
 	ctx := context.Background()
+	hashedPassword, err := util.HashPassword(util.RandomString(6))
+	assert.NoError(t, err)
+
 	arg := CreateUserParams{
 		Username:       prefix + util.RandomString(6),
-		HashedPassword: util.RandomString(12),
+		HashedPassword: hashedPassword,
 		FullName:       util.RandomString(6),
 		Email:          util.RandomEmail(6),
 	}
