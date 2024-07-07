@@ -9,6 +9,7 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/mock v0.4.0
+	golang.org/x/crypto v0.24.0
 )
 
 require (
@@ -33,7 +34,6 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	golang.org/x/arch v0.8.0 // indirect
-	golang.org/x/crypto v0.24.0 // indirect
 	golang.org/x/net v0.26.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect
 	golang.org/x/text v0.16.0 // indirect

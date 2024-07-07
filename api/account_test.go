@@ -26,7 +26,7 @@ func randomAccount() db.Account {
 	}
 }
 
-func requiredMatchBody(t *testing.T, body *bytes.Buffer, account db.Account) {
+func requiredAccountMatchBody(t *testing.T, body *bytes.Buffer, account db.Account) {
 	data, err := io.ReadAll(body)
 	assert.NoError(t, err)
 
@@ -58,7 +58,7 @@ func TestGetAccountAPI(t *testing.T) {
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusOK, recorder.Code)
-				requiredMatchBody(t, recorder.Body, account)
+				requiredAccountMatchBody(t, recorder.Body, account)
 			},
 		},
 		{
@@ -245,7 +245,7 @@ func TestCreateAccount(t *testing.T) {
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusOK, recorder.Code)
-				requiredMatchBody(t, recorder.Body, account)
+				requiredAccountMatchBody(t, recorder.Body, account)
 			},
 		},
 		{
