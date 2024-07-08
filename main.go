@@ -10,6 +10,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/novalyezu/simplebank-backend/api"
 	db "github.com/novalyezu/simplebank-backend/db/sqlc"
+	"github.com/novalyezu/simplebank-backend/token"
 )
 
 func main() {
@@ -19,11 +20,12 @@ func main() {
 	}
 
 	var (
-		dbHost = os.Getenv("POSTGRES_HOST")
-		dbPort = os.Getenv("POSTGRES_PORT")
-		dbUser = os.Getenv("POSTGRES_USER")
-		dbPass = os.Getenv("POSTGRES_PASSWORD")
-		dbName = os.Getenv("POSTGRES_DATABASE")
+		dbHost            = os.Getenv("POSTGRES_HOST")
+		dbPort            = os.Getenv("POSTGRES_PORT")
+		dbUser            = os.Getenv("POSTGRES_USER")
+		dbPass            = os.Getenv("POSTGRES_PASSWORD")
+		dbName            = os.Getenv("POSTGRES_DATABASE")
+		tokenSymmetricKey = os.Getenv("TOKEN_SYMMETRIC_KEY")
 	)
 
 	dbDriver := "postgres"
@@ -35,7 +37,12 @@ func main() {
 	}
 
 	store := db.NewStore(conn)
-	server := api.NewServer(store)
+	tokenMaker, err := token.NewPasetoMaker(tokenSymmetricKey)
+	if err != nil {
+		log.Fatal("Cannot create token maker: ", err)
+	}
+
+	server := api.NewServer(store, tokenMaker)
 
 	err = server.Start(":3000")
 	if err != nil {

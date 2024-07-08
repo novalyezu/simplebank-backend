@@ -212,7 +212,7 @@ func TestCreateUser(t *testing.T) {
 
 			tc.buildStubs(store)
 
-			server := NewServer(store)
+			server := newServerTest(t, store)
 			recorder := httptest.NewRecorder()
 			url := "/users"
 			data, err := json.Marshal(tc.body)
