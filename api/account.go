@@ -8,10 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
 	db "github.com/novalyezu/simplebank-backend/db/sqlc"
+	"github.com/novalyezu/simplebank-backend/token"
 )
 
 type createAccountRequest struct {
-	Owner    string `json:"owner" binding:"required"`
 	Currency string `json:"currency" binding:"required,currency"`
 }
 
@@ -22,8 +22,9 @@ func (server *Server) createAccount(c *gin.Context) {
 		return
 	}
 
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	arg := db.CreateAccountParams{
-		Owner:    body.Owner,
+		Owner:    authPayload.Username,
 		Balance:  0,
 		Currency: body.Currency,
 	}
@@ -33,7 +34,7 @@ func (server *Server) createAccount(c *gin.Context) {
 		if pgError, ok := err.(*pq.Error); ok {
 			switch pgError.Constraint {
 			case "accounts_owner_fkey":
-				c.JSON(http.StatusForbidden, errorResponse(fmt.Errorf("cannot create account with owner %s doesn't exists", body.Owner)))
+				c.JSON(http.StatusForbidden, errorResponse(fmt.Errorf("cannot create account with owner %s doesn't exists", authPayload.Username)))
 				return
 			case "owner_currency_key":
 				c.JSON(http.StatusForbidden, errorResponse(fmt.Errorf("cannot create account with same currency")))
@@ -68,6 +69,12 @@ func (server *Server) getAccount(c *gin.Context) {
 		return
 	}
 
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	if authPayload.Username != account.Owner {
+		c.JSON(http.StatusNotFound, errorResponse(err))
+		return
+	}
+
 	c.JSON(http.StatusOK, account)
 }
 
@@ -83,7 +90,9 @@ func (server *Server) listAccount(c *gin.Context) {
 		return
 	}
 
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	arg := db.ListAccountsParams{
+		Owner:  authPayload.Username,
 		Limit:  query.Limit,
 		Offset: (query.Page - 1) * query.Limit,
 	}

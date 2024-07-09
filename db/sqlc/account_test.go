@@ -96,20 +96,24 @@ func TestDeleteAccount(t *testing.T) {
 
 func TestListAccounts(t *testing.T) {
 	ctx := context.Background()
+
+	var lastAccount Account
 	for i := 0; i < 10; i++ {
-		createRandomAccount(t, accPrefix)
+		lastAccount = createRandomAccount(t, accPrefix)
 	}
 	defer deleteTestingAccount(ctx, accPrefix)
 
 	arg := ListAccountsParams{
+		Owner:  lastAccount.Owner,
 		Limit:  5,
-		Offset: 5,
+		Offset: 0,
 	}
 	accounts, err := testQueries.ListAccounts(ctx, arg)
 	assert.NoError(t, err)
-	assert.Len(t, accounts, 5)
+	assert.NotEmpty(t, accounts)
 
 	for _, account := range accounts {
 		assert.NotEmpty(t, account)
+		assert.Equal(t, lastAccount.Owner, account.Owner)
 	}
 }

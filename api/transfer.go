@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	db "github.com/novalyezu/simplebank-backend/db/sqlc"
+	"github.com/novalyezu/simplebank-backend/token"
 )
 
 type transferRequest struct {
@@ -30,8 +31,14 @@ func (server *Server) createTransfer(c *gin.Context) {
 		return
 	}
 
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	fromAccount := server.getAccountByID(c, body.FromAccountID)
 	toAccount := server.getAccountByID(c, body.ToAccountID)
+
+	if authPayload.Username != fromAccount.Owner {
+		c.JSON(http.StatusBadRequest, errorResponse(fmt.Errorf("cannot transfer from other account")))
+		return
+	}
 
 	if !server.isValidCurrency(c, fromAccount, body.Currency) {
 		return
