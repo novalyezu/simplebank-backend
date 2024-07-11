@@ -1,0 +1,29 @@
+version: "3.9"
+services:
+  simplebankpg16:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123qweasd
+      - POSTGRES_DB=db_testing
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - GIN_MODE=release
+      - POSTGRES_HOST=simplebankpg16
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123qweasd
+      - POSTGRES_DATABASE=db_testing
+      - TOKEN_SYMMETRIC_KEY=msjewajskwlqpowersdfzxczxcmnbzxm
+      - DB_SOURCE=postgresql://postgres:123qweasd@simplebankpg16:5432/db_testing?sslmode=disable
+    depends_on:
+      - simplebankpg16
+    entrypoint:
+      ["/app/wait-for.sh", "simplebankpg16:5432", "--", "/app/start.sh"]
+    command: ["/app/main"]
