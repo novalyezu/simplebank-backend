@@ -37,7 +37,7 @@ func (server *Server) createAccount(c *gin.Context) {
 				c.JSON(http.StatusForbidden, errorResponse(fmt.Errorf("cannot create account with owner %s doesn't exists", authPayload.Username)))
 				return
 			case "owner_currency_key":
-				c.JSON(http.StatusForbidden, errorResponse(fmt.Errorf("cannot create account with same currency")))
+				c.JSON(http.StatusForbidden, errorResponse(fmt.Errorf("cannot create account with same currency yahh")))
 				return
 			}
 		}
